@@ -1,0 +1,8 @@
+VITE_PRIVY_APP_ID=
+VITE_PRIVY_CLIENT_ID=client-WY6ZNoVYgkHoWN2qdB7tTeHnEMvepHuCf1zzBXhMYvi5H
+
+# Hedge API (no Expo BFF on static web — calls api.hedgeapp.trade directly)
+VITE_HEDGE_API_BASE_URL=https://api.hedgeapp.trade
+
+# DeepBook Predict testnet indexer
+VITE_PREDICT_SERVER_URL=https://predict-server.testnet.mystenlabs.com
