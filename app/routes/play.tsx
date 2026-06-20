@@ -5,6 +5,9 @@ import { useTranslation } from "react-i18next";
 
 import { AppHeader } from "~/components/navigation/app-header";
 import { MobileDrawer } from "~/components/navigation/mobile-drawer";
+import { useNavSearch } from "~/context/nav-search-context";
+import { FeaturedMarketHero } from "~/components/play/featured-market-hero";
+import { HedgeLpPromoBanner } from "~/components/play/hedge-lp-promo-banner";
 import { MarketCardPolymarket } from "~/components/play/market-card-polymarket";
 import { MarketExpiryChips } from "~/components/play/market-expiry-chips";
 import { MarketGridSkeleton } from "~/components/play/market-grid-skeleton";
@@ -22,6 +25,7 @@ import {
   matchesMarketExpiryFilter,
   type MarketExpiryFilter,
 } from "~/lib/predict/market-expiry-filter";
+import { excludeFeaturedMarket, pickFeaturedMarket } from "~/lib/predict/pick-featured-market";
 import type { PredictPlayCard } from "~/lib/predict/types";
 
 type PendingTrade =
@@ -32,11 +36,11 @@ export default function PlayRoute() {
   const { t } = useTranslation();
   const { openOnboarding } = useOnboarding();
   const { authenticated } = usePrivy();
+  const { searchQuery, setSearchQuery } = useNavSearch();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const [expiryFilter, setExpiryFilter] = useState<MarketExpiryFilter>("all");
   const [assetFilter, setAssetFilter] = useState<string | null>(null);
-  const { cards, catalog, isLoading, error, refetch } = usePredictPlayCards();
+  const { cards, catalog, isLoading, isRefreshing, error, refetch } = usePredictPlayCards();
   const [listNowMs, setListNowMs] = useState(() => Date.now());
 
   const trade = usePredictTrade();
@@ -75,6 +79,12 @@ export default function PlayRoute() {
       return true;
     });
   }, [tradeableCards, expiryFilter, assetFilter, searchQuery, listNowMs]);
+
+  const featuredCard = useMemo(() => pickFeaturedMarket(filteredCards), [filteredCards]);
+  const gridCards = useMemo(
+    () => excludeFeaturedMarket(filteredCards, featuredCard),
+    [filteredCards, featuredCard]
+  );
 
   const startDirectional = (card: PredictPlayCard, isUp: boolean) => {
     if (!authenticated) {
@@ -129,85 +139,122 @@ export default function PlayRoute() {
       />
 
       <div className="px-4 py-4 lg:px-8 max-w-[1400px] mx-auto w-full flex flex-col gap-4">
-        {!isLoading && catalog ? (
-          <MarketExpiryChips
-            value={expiryFilter}
-            onChange={setExpiryFilter}
-            assets={catalog.activeAssets}
-            assetFilter={assetFilter}
-            onAssetFilterChange={setAssetFilter}
-          />
-        ) : null}
+        <div className="play-markets-layout">
+          <HedgeLpPromoBanner />
 
-        {trade.gasRequired ? (
-          <div className="glass-card text-sm">
-            <p className="m-0 font-semibold">Testnet SUI required for gas</p>
-            <p className="text-hedge-muted mt-1 m-0">
-              Fund your wallet with testnet SUI, then try again.
-            </p>
-            <button
-              type="button"
-              className="mt-3 text-hedge-primary font-semibold border-0 bg-transparent cursor-pointer"
-              onClick={() => trade.setGasRequired(false)}>
-              Dismiss
-            </button>
-          </div>
-        ) : null}
-
-        {isLoading ? (
-          <MarketGridSkeleton />
-        ) : error ? (
-          <div className="glass-card text-center">
-            <p className="text-red-600 m-0">{error}</p>
-            <button
-              type="button"
-              onClick={() => void refetch()}
-              className="mt-4 text-hedge-primary font-semibold border-0 bg-transparent cursor-pointer">
-              Retry
-            </button>
-          </div>
-        ) : filteredCards.length === 0 ? (
-          <div className="glass-card text-center text-hedge-muted">
-            <p className="m-0 font-semibold">{t("play.searchMarketsEmpty")}</p>
-            {cards.length > 0 ? (
-              <button
-                type="button"
-                onClick={() => {
-                  setExpiryFilter("all");
-                  setAssetFilter(null);
-                  setSearchQuery("");
-                }}
-                className="mt-3 text-hedge-primary font-semibold border-0 bg-transparent cursor-pointer">
-                Clear filters
-              </button>
+          <div className="play-markets-layout__body">
+            {catalog ? (
+              <MarketExpiryChips
+                value={expiryFilter}
+                onChange={setExpiryFilter}
+                assets={catalog.activeAssets}
+                assetFilter={assetFilter}
+                onAssetFilterChange={setAssetFilter}
+              />
             ) : null}
+
+            {isRefreshing && cards.length > 0 ? (
+              <p className="play-refresh-hint" aria-live="polite">
+                Updating markets…
+              </p>
+            ) : null}
+
+            {error && cards.length > 0 ? (
+              <div className="play-markets-error glass-card text-sm">
+                <p className="m-0 text-red-600">{error}</p>
+                <button
+                  type="button"
+                  onClick={() => void refetch()}
+                  className="mt-2 text-hedge-primary font-semibold border-0 bg-transparent cursor-pointer p-0">
+                  Retry
+                </button>
+              </div>
+            ) : null}
+
+            {trade.gasRequired ? (
+              <div className="glass-card text-sm">
+                <p className="m-0 font-semibold">Testnet SUI required for gas</p>
+                <p className="text-hedge-muted mt-1 m-0">
+                  Fund your wallet with testnet SUI, then try again.
+                </p>
+                <button
+                  type="button"
+                  className="mt-3 text-hedge-primary font-semibold border-0 bg-transparent cursor-pointer"
+                  onClick={() => trade.setGasRequired(false)}>
+                  Dismiss
+                </button>
+              </div>
+            ) : null}
+
+            {isLoading && cards.length === 0 ? (
+              <MarketGridSkeleton />
+            ) : error && cards.length === 0 ? (
+              <div className="glass-card text-center">
+                <p className="text-red-600 m-0">{error}</p>
+                <button
+                  type="button"
+                  onClick={() => void refetch()}
+                  className="mt-4 text-hedge-primary font-semibold border-0 bg-transparent cursor-pointer">
+                  Retry
+                </button>
+              </div>
+            ) : filteredCards.length === 0 ? (
+              <div className="glass-card text-center text-hedge-muted">
+                <p className="m-0 font-semibold">{t("play.searchMarketsEmpty")}</p>
+                {cards.length > 0 ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setExpiryFilter("all");
+                      setAssetFilter(null);
+                      setSearchQuery("");
+                    }}
+                    className="mt-3 text-hedge-primary font-semibold border-0 bg-transparent cursor-pointer">
+                    Clear filters
+                  </button>
+                ) : null}
+              </div>
+            ) : (
+              <>
+                {featuredCard ? (
+                  <FeaturedMarketHero
+                    card={featuredCard}
+                    onBetUp={() => startDirectional(featuredCard, true)}
+                    onBetDown={() => startDirectional(featuredCard, false)}
+                  />
+                ) : null}
+
+                {gridCards.length > 0 ? (
+                  <>
+                    <h2 className="play-more-markets__title">{t("play.moreMarkets")}</h2>
+                    <div className="market-list-mobile flex flex-col gap-4">
+                      {gridCards.map((card, index) => (
+                        <MarketListCardMobile
+                          key={card.oracle.oracle_id}
+                          card={card}
+                          image={marketCardImage(index)}
+                          onBetUp={() => startDirectional(card, true)}
+                          onBetDown={() => startDirectional(card, false)}
+                          onBetRange={() => startRange(card)}
+                        />
+                      ))}
+                    </div>
+                    <div className="market-grid-desktop">
+                      {gridCards.map((card) => (
+                        <MarketCardPolymarket
+                          key={card.oracle.oracle_id}
+                          card={card}
+                          onBetUp={() => startDirectional(card, true)}
+                          onBetDown={() => startDirectional(card, false)}
+                        />
+                      ))}
+                    </div>
+                  </>
+                ) : null}
+              </>
+            )}
           </div>
-        ) : (
-          <>
-            <div className="market-list-mobile flex flex-col gap-4">
-              {filteredCards.map((card, index) => (
-                <MarketListCardMobile
-                  key={card.oracle.oracle_id}
-                  card={card}
-                  image={marketCardImage(index)}
-                  onBetUp={() => startDirectional(card, true)}
-                  onBetDown={() => startDirectional(card, false)}
-                  onBetRange={() => startRange(card)}
-                />
-              ))}
-            </div>
-            <div className="market-grid-desktop">
-              {filteredCards.map((card) => (
-                <MarketCardPolymarket
-                  key={card.oracle.oracle_id}
-                  card={card}
-                  onBetUp={() => startDirectional(card, true)}
-                  onBetDown={() => startDirectional(card, false)}
-                />
-              ))}
-            </div>
-          </>
-        )}
+        </div>
       </div>
 
       <BetAmountModal

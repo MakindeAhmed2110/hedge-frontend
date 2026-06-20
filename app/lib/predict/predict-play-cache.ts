@@ -11,6 +11,11 @@ export function getCachedOracleCatalog(now = Date.now()): PredictOracleListItem[
   return catalogEntry.data;
 }
 
+/** Last successful catalog — used when a refresh times out. */
+export function getStaleOracleCatalog(): PredictOracleListItem[] | null {
+  return catalogEntry?.data ?? null;
+}
+
 export function setCachedOracleCatalog(data: PredictOracleListItem[], now = Date.now()) {
   catalogEntry = { at: now, data };
 }

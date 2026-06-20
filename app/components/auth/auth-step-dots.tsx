@@ -1,6 +1,6 @@
-type AuthStep = "email" | "otp" | "handle";
+type AuthStep = "email" | "otp";
 
-const STEPS: AuthStep[] = ["email", "otp", "handle"];
+const STEPS: AuthStep[] = ["email", "otp"];
 
 type AuthStepDotsProps = {
   active: AuthStep;

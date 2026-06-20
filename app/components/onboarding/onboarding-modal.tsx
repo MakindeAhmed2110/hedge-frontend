@@ -4,7 +4,7 @@ import { OnboardingFlow } from "~/components/onboarding/onboarding-flow";
 import { useOnboarding } from "~/components/onboarding/onboarding-context";
 
 export function OnboardingModal() {
-  const { isOpen, markComplete, closeOnboarding } = useOnboarding();
+  const { isOpen, session, markComplete, closeOnboarding } = useOnboarding();
 
   useEffect(() => {
     if (!isOpen) return;
@@ -40,7 +40,7 @@ export function OnboardingModal() {
           </svg>
         </button>
         <div className="onboarding-modal__panel">
-          <OnboardingFlow onComplete={markComplete} />
+          <OnboardingFlow key={session} onComplete={markComplete} />
         </div>
         <div className="onboarding-modal__art" aria-hidden />
       </div>

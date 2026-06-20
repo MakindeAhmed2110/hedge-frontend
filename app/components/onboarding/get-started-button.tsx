@@ -25,12 +25,8 @@ export function GetStartedButton({ variant = "icon", className = "" }: GetStarte
       <button
         type="button"
         className={`get-started-btn get-started-btn--pill ${className}`.trim()}
-        onClick={openOnboarding}
-        aria-label={label}>
-        <span className="get-started-btn__icon" aria-hidden>
-          <span className="get-started-btn__bar" />
-        </span>
-        <span className="get-started-btn__label">{label}</span>
+        onClick={openOnboarding}>
+        {label}
       </button>
     );
   }

@@ -2,6 +2,7 @@ import { useCallback, useEffect, type ReactNode } from "react";
 import { useNavigate } from "react-router";
 
 import { RequireAuth } from "~/components/auth/require-auth";
+import { useMediaQuery } from "~/hooks/use-media-query";
 
 type HedgePageModalShellProps = {
   title: string;
@@ -40,6 +41,7 @@ export function HedgePageModalShell({
   onSearchQueryChange,
 }: HedgePageModalShellProps) {
   const navigate = useNavigate();
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
 
   const handleClose = useCallback(() => {
     if (typeof window !== "undefined" && window.history.length > 1) {
@@ -50,6 +52,7 @@ export function HedgePageModalShell({
   }, [navigate]);
 
   useEffect(() => {
+    if (isDesktop) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const onKey = (e: KeyboardEvent) => {
@@ -60,7 +63,7 @@ export function HedgePageModalShell({
       document.body.style.overflow = prev;
       window.removeEventListener("keydown", onKey);
     };
-  }, [handleClose]);
+  }, [handleClose, isDesktop]);
 
   const panelClass =
     variant === "points" ? "hedge-panel hedge-panel--points" : "hedge-panel";
@@ -90,11 +93,14 @@ export function HedgePageModalShell({
   );
 
   return (
-    <div className="hedge-panel-overlay" role="presentation" onClick={handleClose}>
+    <div
+      className="hedge-panel-overlay"
+      role="presentation"
+      onClick={isDesktop ? undefined : handleClose}>
       <aside
         className={panelClass}
-        role="dialog"
-        aria-modal="true"
+        role={isDesktop ? undefined : "dialog"}
+        aria-modal={isDesktop ? undefined : true}
         aria-labelledby="hedge-panel-page-title"
         onClick={(e) => e.stopPropagation()}>
         <header className="hedge-panel__chrome">

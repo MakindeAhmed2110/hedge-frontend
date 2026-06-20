@@ -85,6 +85,16 @@ export default function VaultsRoute() {
     }
   };
 
+  const deployLadder = () => {
+    if (!deployTarget || !signContext) return;
+    void runVaultAction(t("vaults.deployLadder"), () =>
+      deployRangeLadderVault(
+        { card: deployTarget, totalStakeUsd: Math.min(10, walletUsd) },
+        signContext
+      )
+    );
+  };
+
   return (
     <HedgePageModalShell
       title={t("vaults.title")}
@@ -171,14 +181,7 @@ export default function VaultsRoute() {
             type="button"
             disabled={submitting}
             className="hedge-btn-primary"
-            onClick={() =>
-              void runVaultAction(t("vaults.deployLadder"), () =>
-                deployRangeLadderVault(
-                  { card: deployTarget, totalStakeUsd: Math.min(10, walletUsd) },
-                  signContext!
-                )
-              )
-            }>
+            onClick={deployLadder}>
             {t("vaults.deployLadder")}
           </button>
         ) : (

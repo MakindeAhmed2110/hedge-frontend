@@ -15,6 +15,7 @@ import { setOnboardingDone } from "~/lib/preferences/onboarding";
 
 type OnboardingContextValue = {
   isOpen: boolean;
+  session: number;
   openOnboarding: () => void;
   closeOnboarding: () => void;
   markComplete: () => void;
@@ -26,8 +27,10 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const { ready } = usePrivy();
   const { hasUsername, isLoading: usernameLoading } = useAppUsername();
   const [isOpen, setIsOpen] = useState(false);
+  const [session, setSession] = useState(0);
 
   const openOnboarding = useCallback(() => {
+    setSession((value) => value + 1);
     setIsOpen(true);
   }, []);
 
@@ -41,16 +44,15 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!ready || usernameLoading) return;
+    if (!ready || usernameLoading || isOpen) return;
     if (hasUsername) {
       void setOnboardingDone();
-      setIsOpen(false);
     }
-  }, [hasUsername, ready, usernameLoading]);
+  }, [hasUsername, isOpen, ready, usernameLoading]);
 
   const value = useMemo(
-    () => ({ isOpen, openOnboarding, closeOnboarding, markComplete }),
-    [closeOnboarding, isOpen, markComplete, openOnboarding]
+    () => ({ isOpen, session, openOnboarding, closeOnboarding, markComplete }),
+    [closeOnboarding, isOpen, markComplete, openOnboarding, session]
   );
 
   return <OnboardingContext.Provider value={value}>{children}</OnboardingContext.Provider>;

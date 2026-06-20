@@ -216,3 +216,11 @@ export type MarketActivityRow = {
   timestampMs: number;
   digest: string;
 };
+
+export type MarketComment = {
+  id: string;
+  handle: string;
+  body: string;
+  timestampMs: number;
+  authorAddress?: string;
+};

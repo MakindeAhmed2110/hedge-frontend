@@ -51,6 +51,10 @@ export function buildMarketChartSeries(card: PredictPlayCard, points = 48): Char
   return series;
 }
 
+export function isCardPriceLoading(card: PredictPlayCard): boolean {
+  return card.spot <= 0;
+}
+
 export function leanProbabilityPct(card: PredictPlayCard): number {
   const lean = marketPriceLean(card.spot, card.forward);
   const pct = Math.min(95, Math.max(5, 50 + lean.deltaPct * 8));

@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { MARKET_ASSET_ICON } from "~/constants/market-images";
 import { formatExpiryCountdown } from "~/lib/predict/format";
 import {
+  isCardPriceLoading,
   marketListTitle,
   marketPriceLean,
   marketSubtitle,
@@ -33,6 +34,7 @@ export function MarketListCardMobile({
   const countdown = formatExpiryCountdown(card.oracle.expiry, nowMs);
   const lean = marketPriceLean(card.spot, card.forward);
   const leanLabel = t(lean.isUp ? "play.leanUp" : "play.leanDown");
+  const priceLoading = isCardPriceLoading(card);
 
   useEffect(() => {
     const id = setInterval(() => setNowMs(Date.now()), 1000);
@@ -53,7 +55,13 @@ export function MarketListCardMobile({
             {marketListTitle(card, windowLabel)}
           </h3>
           <p className="m-0 mt-1.5 text-[13px] text-hedge-muted">
-            {marketSubtitle(card)} · {leanLabel}
+            {priceLoading ? (
+              <span className="market-price-pending market-price-pending--wide" aria-hidden />
+            ) : (
+              <>
+                {marketSubtitle(card)} · {leanLabel}
+              </>
+            )}
           </p>
         </div>
       </div>

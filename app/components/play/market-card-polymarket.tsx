@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { MARKET_ASSET_ICON } from "~/constants/market-images";
 import { formatExpiryCountdown } from "~/lib/predict/format";
 import {
+  isCardPriceLoading,
   leanProbabilityPct,
   marketListTitle,
   marketSubtitle,
@@ -23,6 +24,7 @@ export function MarketCardPolymarket({ card, onBetUp, onBetDown }: MarketCardPol
   const windowLabel = formatMarketWindowLabel(card.oracle.expiry, nowMs);
   const countdown = formatExpiryCountdown(card.oracle.expiry, nowMs);
   const upPct = leanProbabilityPct(card);
+  const priceLoading = isCardPriceLoading(card);
 
   useEffect(() => {
     const id = setInterval(() => setNowMs(Date.now()), 1000);
@@ -41,13 +43,23 @@ export function MarketCardPolymarket({ card, onBetUp, onBetDown }: MarketCardPol
           <h3 className="m-0 text-[15px] font-bold leading-snug line-clamp-2">
             {marketListTitle(card, windowLabel)}
           </h3>
-          <p className="m-0 mt-1 text-xs text-hedge-muted">{marketSubtitle(card)}</p>
+          <p className="m-0 mt-1 text-xs text-hedge-muted">
+            {priceLoading ? (
+              <span className="market-price-pending" aria-hidden />
+            ) : (
+              marketSubtitle(card)
+            )}
+          </p>
         </div>
       </div>
 
       <div className="flex items-center justify-between text-sm">
         <div className="flex items-center gap-2">
-          <span className="font-bold text-hedge-fg">{upPct}%</span>
+          {priceLoading ? (
+            <span className="market-price-pending market-price-pending--pct" aria-hidden />
+          ) : (
+            <span className="font-bold text-hedge-fg">{upPct}%</span>
+          )}
           <span className="text-hedge-muted text-xs">{t("play.betUp")}</span>
         </div>
         <div className="flex items-center gap-1.5 text-xs">

@@ -5,46 +5,35 @@ import { useAuthModal } from "~/components/auth/auth-modal-context";
 import { AuthOtpInput } from "~/components/auth/auth-otp-input";
 import { AuthPillInput } from "~/components/auth/auth-pill-input";
 import { AuthStepDots } from "~/components/auth/auth-step-dots";
-import { useAppUsername } from "~/hooks/use-app-username";
 import { useEnsureSuiWallet } from "~/hooks/use-ensure-sui-wallet";
-import { HedgeRegisterError, registerWithHedge } from "~/lib/hedge/register-with-hedge";
-import { normalizeUsername, validateUsername } from "~/lib/privy/custom-metadata";
-import { getSuiAddressFromUser } from "~/lib/privy/user-accounts";
 
-type Step = "email" | "otp" | "handle";
+type Step = "email" | "otp";
 
 export function HedgeAuthModal() {
   const { isOpen, closeAuth } = useAuthModal();
-  const { ready, authenticated, user, getAccessToken } = usePrivy();
-  const { hasUsername, saveUsername, isLoading: usernameLoading } = useAppUsername();
+  const { ready, authenticated } = usePrivy();
   const { ensureSuiWallet } = useEnsureSuiWallet();
 
   const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
-  const [handle, setHandle] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [savingHandle, setSavingHandle] = useState(false);
 
   const { sendCode, loginWithCode, state } = useLoginWithEmail({
     onError: (err: unknown) => setError(String(err)),
   });
 
   useEffect(() => {
-    if (!isOpen || !ready) return;
-    if (!authenticated) {
-      if (step === "handle") setStep("email");
-      return;
-    }
-    if (!usernameLoading && !hasUsername) {
-      setStep("handle");
-    }
-  }, [authenticated, hasUsername, isOpen, ready, step, usernameLoading]);
+    if (!isOpen) return;
+    setStep("email");
+    setEmail("");
+    setError(null);
+  }, [isOpen]);
 
   useEffect(() => {
-    if (ready && authenticated && hasUsername && isOpen) {
+    if (ready && authenticated && isOpen) {
       closeAuth();
     }
-  }, [authenticated, closeAuth, hasUsername, isOpen, ready]);
+  }, [authenticated, closeAuth, isOpen, ready]);
 
   useEffect(() => {
     if (state.status === "awaiting-code-input") {
@@ -73,40 +62,10 @@ export function HedgeAuthModal() {
       await loginWithCode({ code });
       await ensureSuiWallet();
       setError(null);
-      setStep("handle");
-    },
-    [ensureSuiWallet, loginWithCode]
-  );
-
-  const finishHandle = useCallback(async () => {
-    const err = validateUsername(handle);
-    if (err) {
-      setError(err);
-      return;
-    }
-    setSavingHandle(true);
-    setError(null);
-    try {
-      await saveUsername(handle);
-      const token = await getAccessToken();
-      const sui = getSuiAddressFromUser(user);
-      if (token && sui) {
-        try {
-          await registerWithHedge(token, {
-            suiAddress: sui,
-            handle: normalizeUsername(handle),
-          });
-        } catch (e) {
-          if (!(e instanceof HedgeRegisterError)) throw e;
-        }
-      }
       closeAuth();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not save handle");
-    } finally {
-      setSavingHandle(false);
-    }
-  }, [closeAuth, getAccessToken, handle, saveUsername, user]);
+    },
+    [closeAuth, ensureSuiWallet, loginWithCode]
+  );
 
   const goBack = () => {
     setError(null);
@@ -127,13 +86,15 @@ export function HedgeAuthModal() {
   const titles: Record<Step, string> = {
     email: "Sign in",
     otp: "Verify",
-    handle: "Handle",
   };
 
   const showBack = step === "otp" && !authenticated;
 
   return (
-    <div className="auth-overlay" role="presentation" onClick={(e) => e.target === e.currentTarget && authenticated ? closeAuth() : undefined}>
+    <div
+      className="auth-overlay"
+      role="presentation"
+      onClick={(e) => e.target === e.currentTarget && authenticated ? closeAuth() : undefined}>
       <div
         className="auth-sheet"
         role="dialog"
@@ -188,19 +149,6 @@ export function HedgeAuthModal() {
                 Resend code
               </button>
             </>
-          ) : null}
-
-          {step === "handle" ? (
-            <AuthPillInput
-              value={handle}
-              onChange={setHandle}
-              placeholder="handle"
-              prefix="@"
-              maxLength={20}
-              onSubmit={() => void finishHandle()}
-              loading={savingHandle}
-              disabled={savingHandle}
-            />
           ) : null}
 
           {error ? <p className="auth-sheet__error">{error}</p> : null}

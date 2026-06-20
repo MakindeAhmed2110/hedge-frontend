@@ -3,11 +3,13 @@ import { mapWithConcurrency } from '~/lib/predict/fetch-pool';
 import {
   getCachedOracleCatalog,
   getCachedOracleState,
+  getStaleOracleCatalog,
   setCachedOracleCatalog,
   setCachedOracleState,
 } from '~/lib/predict/predict-play-cache';
 import { sortActiveOracles } from '~/lib/predict/oracle-catalog';
 import type {
+  MarketComment,
   PredictManagerListItem,
   PredictManagerSummary,
   PredictOracleListItem,
@@ -21,12 +23,15 @@ import type {
 } from '~/lib/predict/types';
 
 const PREDICT_FETCH_TIMEOUT_MS = 12_000;
+const ORACLE_CATALOG_TIMEOUT_MS = 30_000;
 const ORACLE_STATE_CONCURRENCY = 6;
 
-async function predictFetch<T>(path: string): Promise<T> {
+let catalogFetchPromise: Promise<PredictOracleListItem[]> | null = null;
+
+async function predictFetch<T>(path: string, timeoutMs = PREDICT_FETCH_TIMEOUT_MS): Promise<T> {
   const url = `${PREDICT_SERVER_URL.replace(/\/$/, '')}${path}`;
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), PREDICT_FETCH_TIMEOUT_MS);
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const response = await fetch(url, { signal: controller.signal });
     if (!response.ok) {
@@ -47,7 +52,10 @@ async function predictFetch<T>(path: string): Promise<T> {
 export async function fetchPredictOracles(
   predictId = PREDICT_OBJECT_ID
 ): Promise<PredictOracleListItem[]> {
-  return predictFetch<PredictOracleListItem[]>(`/predicts/${predictId}/oracles`);
+  return predictFetch<PredictOracleListItem[]>(
+    `/predicts/${predictId}/oracles`,
+    ORACLE_CATALOG_TIMEOUT_MS
+  );
 }
 
 export async function fetchOracleState(oracleId: string): Promise<PredictOracleStateResponse> {
@@ -63,12 +71,22 @@ export async function fetchOracleCatalogCached(): Promise<PredictOracleListItem[
   const cached = getCachedOracleCatalog();
   if (cached) return cached;
 
-  const catalog = await fetchOracleCatalog();
-  setCachedOracleCatalog(catalog);
-  return catalog;
+  if (!catalogFetchPromise) {
+    catalogFetchPromise = fetchOracleCatalog().finally(() => {
+      catalogFetchPromise = null;
+    });
+  }
+
+  try {
+    return await catalogFetchPromise;
+  } catch (err) {
+    const stale = getStaleOracleCatalog();
+    if (stale) return stale;
+    throw err;
+  }
 }
 
-function fallbackOracleState(oracle: PredictOracleListItem): PredictOracleStateResponse {
+export function fallbackOracleState(oracle: PredictOracleListItem): PredictOracleStateResponse {
   return {
     oracle,
     latest_price: null,
@@ -146,6 +164,17 @@ export async function fetchOracleTrades(
   limit = 50
 ): Promise<PredictOracleTrade[]> {
   return predictFetch<PredictOracleTrade[]>(`/trades/${oracleId}?limit=${limit}`);
+}
+
+export async function fetchMarketComments(
+  oracleId: string,
+  limit = 24
+): Promise<MarketComment[]> {
+  try {
+    return await predictFetch<MarketComment[]>(`/oracles/${oracleId}/comments?limit=${limit}`);
+  } catch {
+    return [];
+  }
 }
 
 export async function fetchPositionsMinted(

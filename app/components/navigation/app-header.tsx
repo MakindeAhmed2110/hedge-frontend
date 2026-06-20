@@ -21,7 +21,7 @@ export function AppHeader({
   const { hasUsername } = useAppUsername();
 
   return (
-    <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-hedge-border px-4 py-3 lg:px-8">
+    <header className="app-header sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-hedge-border px-4 py-3 lg:hidden">
       <div className="flex items-center gap-3 max-w-[1400px] mx-auto">
         <button
           type="button"

@@ -1,13 +1,19 @@
 {
   "common": {
-    "searchNoResults": "No results"
-  },
-  "auth": {
-    "signInRequired": "You need to sign in first",
-    "signInRequiredBody": "Create an account to use this feature."
+    "searchNoResults": "No results",
+    "close": "Close"
   },
   "onboarding": {
     "getStarted": "Get Started"
+  },
+  "auth": {
+    "logIn": "Log In",
+    "signUp": "Sign Up",
+    "signInRequired": "Sign in to continue",
+    "signInRequiredBody": "Sign in to access this feature."
+  },
+  "nav": {
+    "searchMarkets": "Search markets..."
   },
   "menu": {
     "home": "Home",
@@ -28,12 +34,8 @@
     "referrals": "Referrals",
     "referralsHint": "Share your link and earn when friends trade.",
     "leaderboardHint": "Top predictors by points.",
-    "eventsHint": "Limited-time markets and tournaments — coming soon."
-  },
-  "events": {
-    "subtitle": "Limited-time markets and tournaments.",
-    "emptyTitle": "No events right now",
-    "emptyMessage": "When we run a tournament or a limited-time market, it will show up here. Check back soon."
+    "eventsHint": "Limited-time markets and tournaments — coming soon.",
+    "openNavigation": "Open navigation"
   },
   "history": {
     "title": "History",
@@ -46,31 +48,14 @@
     "listTitle": "Top Traders by Points",
     "empty": "No traders yet",
     "loadError": "Failed to load leaderboard",
-    "retry": "Retry",
-    "you": "You"
+    "retry": "Retry"
   },
   "points": {
-    "pageTitle": "Your Points",
-    "pageSubtitle": "Track your progress, weekly earnings, and leaderboard ranking.",
-    "yourPoints": "Your Points",
-    "weeklyBadge": "+{{amount}} pts this week",
-    "shareCardTitle": "Share Your Point Card",
-    "shareCardBody": "Earn points when your referrals use the app. Redeem them for rewards later.",
-    "shareCard": "Share Card",
-    "customizeCard": "Customize Card",
-    "assignmentsHistory": "Assignments History",
-    "shareSheetTitle": "Share your card",
-    "shareMessage": "I've earned {{points}} points on Hedge! Join with @{{handle}} and get bonus points: {{url}}",
-    "shareMessageNoRef": "I've earned {{points}} points on Hedge!",
-    "copiedShare": "Share message copied to clipboard.",
-    "customizeSheetTitle": "Customize card",
-    "customizeComingSoon": "Card themes and colors are coming soon. Your preview uses the default Hedge style.",
-    "customizeGotIt": "Got it",
     "total": "Total points",
     "thisWeek": "This week",
     "indexerHint": "Points update right after you predict. Pull to refresh if needed.",
     "noActivityWeek": "No points recorded this week yet.",
-    "referralsCta": "Invite friends — Referrals",
+    "referralsCta": "Invite friends → Referrals",
     "loadError": "Could not load points"
   },
   "referrals": {
@@ -292,6 +277,9 @@
     "priceToBeat": "Price to beat",
     "finalPrice": "Final price",
     "currentPrice": "Current price",
+    "endsIn": "Ends in",
+    "moreMarkets": "More markets",
+    "marketLive": "LIVE",
     "untilExpiry": "until expiry",
     "liveBadge": "Live",
     "chartOracleSource": "Deepbook oracle · area chart matches Final price above",
@@ -502,8 +490,10 @@
     "ladderInfoSheetBullet4": "Testnet only for now — not tokenized vault shares. Positions are stored on your device and on-chain via your PredictManager.",
     "ladderInfoSheetGotIt": "Got it",
     "ladderLead": "Two ATM bands. Roll after expiry.",
-    "activeDeployment": "Active deployment · {{count}} bands",
-    "noDeployMarket": "No active market for vault deploy right now.",
+    "lpPromoBadge": "Beta",
+    "lpPromoTitle": "Hedge Your LP Exposure",
+    "lpPromoSubtitle": "Earn passive PLP yield while automatically buying out-of-the-money binaries to protect against tail risk.",
+    "lpPromoCta": "Deploy Hedges",
     "deployLadder": "Deploy ladder",
     "redeployLadder": "Deploy new ladder",
     "redeployTitle": "Replace active ladder?",
