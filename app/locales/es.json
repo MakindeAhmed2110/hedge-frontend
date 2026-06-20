@@ -5,6 +5,25 @@
   "onboarding": {
     "getStarted": "Comenzar"
   },
+  "howItWorks": {
+    "title": "Cómo funciona",
+    "subtitle": "Opera predicciones de precio a corto plazo y cubre tu liquidez — todo on-chain, en unos pocos toques.",
+    "stepsTitle": "Haz una predicción",
+    "step1Title": "Elige un mercado",
+    "step1Body": "Elige un mercado en vivo como BTC y decide hacia dónde se dirige el precio antes de que cierre la ronda.",
+    "step2Title": "Elige Sube o Baja",
+    "step2Body": "Toca Sube o Baja e ingresa tu monto en DUSDC. Las cuotas on-chain en vivo muestran tu pago potencial al instante.",
+    "step3Title": "Cobra al liquidarse",
+    "step3Body": "Cuando el mercado expira, las predicciones ganadoras se canjean y liquidan automáticamente on-chain.",
+    "hedgeTitle": "Cubre tu exposición de LP",
+    "hedgeBody": "Despliega una escalera de rangos para ganar rendimiento pasivo de PLP mientras compras automáticamente binarias fuera del dinero que protegen contra el riesgo de cola.",
+    "hedgeCta": "Explorar bóvedas",
+    "pointsTitle": "Gana puntos y sube en la tabla",
+    "pointsBody": "Cada operación gana puntos. Invita a amigos para obtener bonos y sube en la clasificación.",
+    "pointsCta": "Ver clasificación",
+    "ctaPrimary": "Empezar a operar",
+    "betaNote": "Hedge está actualmente en testnet — las predicciones usan fondos de prueba y la mecánica puede cambiar."
+  },
   "menu": {
     "home": "Inicio",
     "predict": "Predecir",

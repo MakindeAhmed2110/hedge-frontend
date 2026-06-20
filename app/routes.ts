@@ -6,6 +6,7 @@ export default [
   layout("routes/app-layout.tsx", [
     index("routes/index-redirect.tsx"),
     route("play", "routes/play.tsx"),
+    route("how-it-works", "routes/how-it-works.tsx"),
     route("portfolio", "routes/portfolio.tsx"),
     route("vaults", "routes/vaults.tsx"),
     route("positions", "routes/positions.tsx"),

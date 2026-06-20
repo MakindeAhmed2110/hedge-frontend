@@ -11,6 +11,7 @@ import { PositionSummaryCard } from "~/components/positions/position-summary-car
 import { PositionsSummaryCard } from "~/components/positions/positions-summary-card";
 import { RequireAuth } from "~/components/auth/require-auth";
 import { TradeToast } from "~/components/trading/trade-toast";
+import { WithdrawToWalletModal } from "~/components/trading/withdraw-to-wallet-modal";
 import { TabEmptyState } from "~/components/ui/tab-empty-state";
 import { useAutoClearExpiredPositions } from "~/hooks/use-auto-clear-expired-positions";
 import { usePredictManager } from "~/hooks/use-predict-manager";
@@ -20,12 +21,19 @@ import { matchesSearchQuery } from "~/lib/navigation/matches-search-query";
 import {
   PredictTradeError,
   redeemDirectionalPosition,
+  withdrawFromPredictManager,
 } from "~/lib/predict/execute-predict";
-import { formatPredictStrike, underlyingPairLabel } from "~/lib/predict/format";
+import { formatPredictQuote, formatPredictStrike, underlyingPairLabel } from "~/lib/predict/format";
+import {
+  managerBalanceRaw,
+  managerBalanceRawToUsd,
+  usdToManagerBalanceRaw,
+} from "~/lib/predict/manager-balance";
 import {
   positionOpenQuantityRaw,
   positionStrikeRaw,
 } from "~/lib/predict/position-redeem";
+import { hasTestnetSuiGas } from "~/lib/sui/gas-check";
 import { getSuiPublicKeyFromUser } from "~/lib/privy/user-accounts";
 import type { PredictPositionSummary } from "~/lib/predict/types";
 
@@ -78,11 +86,16 @@ export default function PositionsRoute() {
 
   const [positionToClose, setPositionToClose] = useState<PredictPositionSummary | null>(null);
   const [closingKey, setClosingKey] = useState<string | null>(null);
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [toast, setToast] = useState({
     visible: false,
     status: "processing" as "processing" | "success" | "error",
     message: null as string | null,
   });
+
+  const tradingBalanceRaw = summary ? managerBalanceRaw(summary) : 0n;
+  const canWithdraw = hasManager && tradingBalanceRaw > 0n;
 
   const signContext = useMemo(() => {
     if (!suiAddress || !signRawHash) return null;
@@ -171,6 +184,52 @@ export default function PositionsRoute() {
     t,
   ]);
 
+  const handleConfirmWithdraw = useCallback(
+    async (amountUsd: number) => {
+      if (!signContext || !summary) return;
+
+      let amountRaw = usdToManagerBalanceRaw(amountUsd);
+      const maxUsd = managerBalanceRawToUsd(tradingBalanceRaw);
+      if (Math.abs(amountUsd - maxUsd) < 0.000001) {
+        amountRaw = tradingBalanceRaw;
+      }
+      if (amountRaw > tradingBalanceRaw || amountRaw <= 0n) return;
+
+      setIsWithdrawing(true);
+      setWithdrawOpen(false);
+      setToast({ visible: true, status: "processing", message: null });
+
+      try {
+        if (!(await hasTestnetSuiGas(suiAddress!))) {
+          throw new PredictTradeError("Add testnet SUI for gas fees.");
+        }
+        await withdrawFromPredictManager(
+          { senderAddress: signContext.senderAddress, amountRaw },
+          signContext
+        );
+        setToast({
+          visible: true,
+          status: "success",
+          message: t("predictAccount.withdrawSuccess", {
+            amount: formatPredictQuote(Number(amountRaw)),
+          }),
+        });
+        setTimeout(() => setToast((s) => ({ ...s, visible: false })), 1600);
+        void refresh();
+      } catch (err) {
+        const message =
+          err instanceof PredictTradeError || err instanceof Error
+            ? err.message
+            : t("predictAccount.withdrawFailed");
+        setToast({ visible: true, status: "error", message });
+        setTimeout(() => setToast((s) => ({ ...s, visible: false })), 2800);
+      } finally {
+        setIsWithdrawing(false);
+      }
+    },
+    [signContext, summary, tradingBalanceRaw, suiAddress, refresh, t]
+  );
+
   const renderBody = () => {
     if (isInitialLoading) {
       return (
@@ -236,6 +295,23 @@ export default function PositionsRoute() {
               unrealizedPnl={summary.unrealized_pnl}
               isLoading={isLoading || isSyncing}
             />
+            <div className="positions-page__withdraw">
+              <div className="positions-page__withdraw-info">
+                <span className="positions-page__withdraw-label">
+                  {t("predictAccount.dusdcBalance")}
+                </span>
+                <span className="positions-page__withdraw-value">
+                  {formatPredictQuote(Number(tradingBalanceRaw))} DUSDC
+                </span>
+              </div>
+              <button
+                type="button"
+                className="hedge-btn-primary positions-page__withdraw-btn"
+                disabled={!canWithdraw || isWithdrawing}
+                onClick={() => setWithdrawOpen(true)}>
+                {t("predictAccount.withdrawToWallet")}
+              </button>
+            </div>
           </div>
         ) : null}
 
@@ -296,6 +372,16 @@ export default function PositionsRoute() {
         onConfirm={() => void handleConfirmClose()}
         onClose={() => {
           if (!closingKey) setPositionToClose(null);
+        }}
+      />
+
+      <WithdrawToWalletModal
+        open={withdrawOpen}
+        managerBalanceRaw={tradingBalanceRaw}
+        isSubmitting={isWithdrawing}
+        onConfirm={(amountUsd) => void handleConfirmWithdraw(amountUsd)}
+        onClose={() => {
+          if (!isWithdrawing) setWithdrawOpen(false);
         }}
       />
 

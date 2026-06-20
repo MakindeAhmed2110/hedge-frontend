@@ -6,6 +6,25 @@
   "onboarding": {
     "getStarted": "Get Started"
   },
+  "howItWorks": {
+    "title": "How it works",
+    "subtitle": "Trade short-term price predictions and hedge your liquidity — all on-chain, in just a few taps.",
+    "stepsTitle": "Make a prediction",
+    "step1Title": "Pick a market",
+    "step1Body": "Choose a live market like BTC and decide where the price is heading before the round closes.",
+    "step2Title": "Choose Up or Down",
+    "step2Body": "Tap Up or Down and enter your stake in DUSDC. Live on-chain odds show your potential payout instantly.",
+    "step3Title": "Get paid on settlement",
+    "step3Body": "When the market expires, winning predictions are redeemed and settled automatically on-chain.",
+    "hedgeTitle": "Hedge your LP exposure",
+    "hedgeBody": "Deploy a range ladder to earn passive PLP yield while automatically buying out-of-the-money binaries that protect against tail risk.",
+    "hedgeCta": "Explore vaults",
+    "pointsTitle": "Earn points & climb the leaderboard",
+    "pointsBody": "Every trade earns points. Refer friends for bonuses and rise up the leaderboard.",
+    "pointsCta": "View leaderboard",
+    "ctaPrimary": "Start trading",
+    "betaNote": "Hedge is currently on testnet — predictions use test funds and mechanics may change."
+  },
   "auth": {
     "logIn": "Log In",
     "signUp": "Sign Up",
