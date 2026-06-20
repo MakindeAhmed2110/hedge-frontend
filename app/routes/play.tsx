@@ -12,6 +12,7 @@ import { MarketCardPolymarket } from "~/components/play/market-card-polymarket";
 import { MarketExpiryChips } from "~/components/play/market-expiry-chips";
 import { MarketGridSkeleton } from "~/components/play/market-grid-skeleton";
 import { MarketListCardMobile } from "~/components/play/market-list-card-mobile";
+import { PlayOpenPositions } from "~/components/play/play-open-positions";
 import { BetAmountModal } from "~/components/trading/bet-amount-modal";
 import { RangeMintModal, type RangeBandOption } from "~/components/trading/range-mint-modal";
 import { TradeToast } from "~/components/trading/trade-toast";
@@ -140,7 +141,12 @@ export default function PlayRoute() {
 
       <div className="px-4 py-4 lg:px-8 max-w-[1400px] mx-auto w-full flex flex-col gap-4">
         <div className="play-markets-layout">
-          <HedgeLpPromoBanner />
+          <aside className="play-markets-layout__sidebar">
+            <HedgeLpPromoBanner />
+            {authenticated ? (
+              <PlayOpenPositions owner={trade.suiAddress} managerId={trade.managerId} />
+            ) : null}
+          </aside>
 
           <div className="play-markets-layout__body">
             {catalog ? (
@@ -262,6 +268,10 @@ export default function PlayRoute() {
         defaultAmountUsd={trade.defaultStakeUsd}
         walletBalanceUsd={trade.walletBalanceUsd}
         isSubmitting={trade.isTrading}
+        pair={pending ? pending.card.oracle.underlying_asset.toUpperCase() : "BTC"}
+        direction={
+          pending?.kind === "directional" ? (pending.isUp ? "up" : "down") : "range"
+        }
         onClose={() => {
           setBetOpen(false);
           setPending(null);

@@ -311,9 +311,6 @@ export default function PositionsRoute() {
           subtitle={t("positions.subtitle")}
           requireAuth
           contentWide
-          searchPlaceholder={t("positions.searchPositions")}
-          searchQuery={searchQuery}
-          onSearchQueryChange={setSearchQuery}
           onRefresh={() => void refresh()}
           isRefreshing={isLoading || isSyncing}>
           {renderBody()}

@@ -95,12 +95,6 @@ export function usePredictTrade() {
       action: () => Promise<{ txDigest?: string }>
     ) => {
       if (!signContext || !suiAddress) return;
-      if (!preferences.skipBetConfirmation) {
-        const ok = window.confirm(
-          t("play.confirmMintWithAmount", { amount: stakeUsd, label })
-        );
-        if (!ok) return;
-      }
       setIsTrading(true);
       setToast({ visible: true, status: "processing", message: null });
       try {
@@ -138,7 +132,7 @@ export function usePredictTrade() {
         setIsTrading(false);
       }
     },
-    [getAccessToken, preferences.skipBetConfirmation, signContext, suiAddress, t]
+    [getAccessToken, signContext, suiAddress, t]
   );
 
   const mintDirectional = useCallback(
@@ -198,5 +192,7 @@ export function usePredictTrade() {
     mintRange,
     rangeBandsForCard,
     defaultStakeUsd: preferences.defaultStakeUsd,
+    managerId,
+    suiAddress,
   };
 }

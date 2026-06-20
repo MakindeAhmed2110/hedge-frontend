@@ -8,16 +8,31 @@ import {
 } from "react-router";
 
 import type { Route } from "./+types/root";
-import { SITE_TITLE } from "~/constants/brand";
+import {
+  SITE_DESCRIPTION,
+  SITE_PREVIEW_IMAGE,
+  SITE_TITLE,
+  SITE_URL,
+} from "~/constants/brand";
 import { HedgeProviders } from "~/providers/hedge-providers";
 import "./app.css";
 
 export const meta: Route.MetaFunction = () => [
   { title: SITE_TITLE },
-  {
-    name: "description",
-    content: "Trade prediction markets on Sui — Up, Down, and Range.",
-  },
+  { name: "description", content: SITE_DESCRIPTION },
+
+  { property: "og:type", content: "website" },
+  { property: "og:url", content: SITE_URL },
+  { property: "og:title", content: SITE_TITLE },
+  { property: "og:description", content: SITE_DESCRIPTION },
+  { property: "og:image", content: SITE_PREVIEW_IMAGE },
+  { property: "og:image:width", content: "1024" },
+  { property: "og:image:height", content: "569" },
+
+  { name: "twitter:card", content: "summary_large_image" },
+  { name: "twitter:title", content: SITE_TITLE },
+  { name: "twitter:description", content: SITE_DESCRIPTION },
+  { name: "twitter:image", content: SITE_PREVIEW_IMAGE },
 ];
 
 export const links: Route.LinksFunction = () => [
